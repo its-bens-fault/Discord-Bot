@@ -7,15 +7,16 @@ const dec = new TextDecoder();
 const enc = new TextEncoder();
 
 export async function make(name, computer, lvl) {
-    const cmd = ["gnuchess","-q","-g"];
+    const args = ["-q","-g"];
     if (!computer)
-	cmd.push("-m");
-    games[name] = Deno.run({
-	cmd,
+	args.push("-m");
+    const chessCommand = new Deno.Command("gnuchess", {
+	args,
 	stderr: "piped",
 	stdout: "piped",
 	stdin: "piped"
     });
+    games[name] = await chessCommand.spawn()
     await waitOut(name);
     const level = lvl?lvl:0;
     await input(name, `depth ${level}`);
@@ -24,10 +25,11 @@ export async function make(name, computer, lvl) {
 
 export async function close(name) {
     const p = games[name];
-    await p.stdout.close();
-    await p.stdin.close();
-    await p.stderr.close();
-    await p.close();
+    await p.stdin.close()
+    await p.stdout.cancel()
+    await p.stderr.cancel()
+    await p.kill();
+    await p.status;
     delete games[name];
 }
 
@@ -44,21 +46,25 @@ function isInputLine(buf) {
 async function waitOut(name) {
     const game = games[name];
     const buffer = new Uint8Array(bufSize);
-    let c;
+    const gameout = await game.stdout.getReader({mode:"byob"});
+    let d;
     let i = 0;
     do {
-	c = new Uint8Array(1);
-	await game.stdout.read(c);
+	d = new Uint8Array(1);
+	const c = (await gameout.read(d)).value;
 	buffer[i] = c[0];
 	i+=1;
     } while (i < bufSize && !isInputLine(buffer))
-    const txt = dec.decode(buffer);
+	const txt = dec.decode(buffer);
+    gameout.releaseLock()
     return txt;
 }
 
 async function input(name,txt) {
     const game = games[name];
-    await game.stdin.write(enc.encode(`${txt}\n`));
+    const gamein = await game.stdin.getWriter();
+    await gamein.write(enc.encode(`${txt}\n`));
+    await gamein.releaseLock()
     return await waitOut(name);
 }
 

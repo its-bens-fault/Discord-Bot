@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS logTags(
 		     log.level,
 		     log.msg,
 		 ],
-		);
+	);
 	const logId = db.lastInsertRowId;
 	for (const tag of log.tags) {
 	    db.query('INSERT INTO logTags (logId, tag) VALUES (?,?);',[logId, tag]);

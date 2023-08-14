@@ -67,9 +67,9 @@ function logGet(bot, interaction) {
 	    page -=1;
 	else if (action.startsWith("log_next"))
 	    page +=1;
-	ackInteraction(interaction, "deferred");
+	ackInteraction(interaction, "deferred", {ephemeral: true});
     }else {
-	ackInteraction(interaction, "thinking");
+	ackInteraction(interaction, "thinking", {ephemeral: true});
 	id = options?.filter(
 	    (option) => option.name == "id"
 	)[0]?.value;

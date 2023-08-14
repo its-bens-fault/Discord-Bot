@@ -54,4 +54,4 @@ jobs:
           podman run --rm -v ./:/wd:Z -w /wd starbot:$tag lints
       - name: Run tests
         run: |
-          podman run --rm -v ./:/wd:Z -w /wd starbot:$tag tests
+          podman run --rm --security-opt label=type:container_userns_t --security-opt label=type:spc_t --device /dev/fuse --cap-add sys_admin --mount type=tmpfs,destination=/tmp -v ./:/wd:Z -w /wd starbot:$tag tests

@@ -8,7 +8,7 @@ Deno.test("Chess Testing", async (t) => {
 	await chess.make(n);
 	await chess.play(n,"a4");
 	await chess.play(n,"h6");
-	const board = (await chess.board(n));
+	const board = await chess.board(n);
 	await chess.close(n);
 	const expect = await Deno.readTextFile("./src/lib/chess/expectedboard.txt");
 	console.log(board);
@@ -35,7 +35,6 @@ Deno.test("Chess Testing", async (t) => {
 	const n = "State";
 	await chess.make(n);
 	const res = await chess.state(n);
-	console.log(res);
 	await chess.close(n);
 	assert(res.length == 4936);
     });

@@ -31,29 +31,30 @@ export async function renderD2(code, opts) {
 
     const bare = opts?.bare;
 
-    const cmd = ["d2"];
+    const args = [];
 
     if (sketch)
-	cmd.push("-s");
+	args.push("-s");
     if (theme in themes)
-	cmd.push(...["-t",theme]);
+	args.push(...["-t",theme]);
     if (layout in layouts)
-	cmd.push(...["-l",layout]);
+	args.push(...["-l",layout]);
 
-    cmd.push(...["-","-"])
+    args.push(...["-","-"])
     
-    const d2 = Deno.run({
-	cmd,
+    const d2Command = new Deno.Command("d2", {
+	args,
 	stderr: "piped",
 	stdout: "piped",
 	stdin: "piped"
     });
-    const rsvg = Deno.run({
-	cmd: ["rsvg-convert"],
+    const d2 = d2Command.spawn();
+    const rsvgCommand = new Deno.Command("rsvg-convert", {
 	stderr: "piped",
 	stdout: "piped",
 	stdin: "piped"
     });
+    const rsvg = rsvgCommand.spawn();
 
     /* The code being submitted is
      * small, no need to worry about
@@ -61,22 +62,23 @@ export async function renderD2(code, opts) {
     let code_ = code
     if (!bare)
 	code_ = '" ":{\n'+code+'\n}';
-    await d2.stdin.write(enc.encode(code_));
-    await d2.stdin.close();
-    const svg = await d2.output();
-    await d2.stderr.close()
-    await d2.close();
+    const d2in = await d2.stdin.getWriter();
+    await d2in.write(enc.encode(code_));
+    await d2in.close()
+    const d2out = await d2.output();
+    const svg = d2out.stdout;
 
+    const rsvgin = await rsvg.stdin.getWriter();
+    
     let i = 0;
     let n = 0;
     do {
-	n = await rsvg.stdin.write(svg.slice(i));
+	n = await rsvgin.write(svg.slice(i));
 	i += n;
     } while(n)
-    await rsvg.stdin.close();
-    const png = await rsvg.output();
-    await rsvg.stderr.close()
-    await rsvg.close();
+    await rsvgin.close();
+    const rsvgout = await rsvg.output();
+    const png = rsvgout.stdout;
     
     return png;
 }
