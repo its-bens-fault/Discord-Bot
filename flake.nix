@@ -43,10 +43,19 @@
         in import (pkgs.runCommand "meson-wrap-${name}-${version}" {} ''
           ${mesonPy}/bin/${mesonPy.executable} ${./mesonWrapFetch.py} ${./.} > $out
         '') { inherit pkgs; };
+        fs = pkgs.lib.fileset;
       in  {
         pname = name;
         inherit version;
-        src = self;
+        src = fs.toSource {
+          root = ./.;
+          fileset = fs.unions [
+            ./meson.build
+            ./meson.options
+            ./src
+            ./subprojects
+          ];
+        };
         
         inherit nativeBuildInputs;
         
