@@ -23,7 +23,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: image
-          key: starbot_container-${{ hashFiles('flake.*','**.c','**.h') }}
+          key: starbot_container-${{ hashFiles('flake.*','**meson.build','src/**','subprojects/**') }}
       - name: Build Container
         if: steps.image-cache.outputs.cache-hit != 'true'
         run: |
