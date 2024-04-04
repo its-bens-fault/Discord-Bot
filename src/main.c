@@ -51,6 +51,12 @@ int main(void) {
   starbot_configure_logging();
   log_trace("Connecting to discord...");
   struct discord *client = discord_init(GET_DISCORD_TOKEN());
+  discord_add_intents(client, DISCORD_GATEWAY_GUILDS |
+		      DISCORD_GATEWAY_GUILD_MESSAGES |
+                                  DISCORD_GATEWAY_MESSAGE_CONTENT |
+                                  DISCORD_GATEWAY_GUILD_MESSAGE_REACTIONS |
+                                  DISCORD_GATEWAY_GUILD_WEBHOOKS |
+                                  DISCORD_GATEWAY_DIRECT_MESSAGES);
   discord_set_on_ready(client, &on_ready);
   discord_set_on_interaction_create(client, &on_interaction);
   discord_run(client);
