@@ -13,9 +13,11 @@ void command_stupify(struct discord *client, const struct discord_interaction *e
     original = event->message->content;
     break;
   default:
+    original = "No message to stupify";
     log_error("Type of interaction not supported");
     break;
   }
+  log_trace("Stupifying: %s", original);
 
   size_t l_orig = strlen(original);
   char* response = malloc(l_orig);
