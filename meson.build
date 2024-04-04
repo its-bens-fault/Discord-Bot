@@ -4,7 +4,9 @@ project('StarBot', 'c',
                      'prefer_static=true',
                      'default_library=static'])
 
-add_project_arguments('-DDISCORD_TOKEN="'+get_option('DISCORD_TOKEN')+'"', language : 'c')
+if get_option('DISCORD_TOKEN') != ''
+  add_project_arguments('-DDISCORD_TOKEN="'+get_option('DISCORD_TOKEN')+'"', language : 'c')
+endif
 
 starbot_src = [ ]
 
