@@ -2,6 +2,7 @@
 #define STARBOT_COMMANDS_H
 
 #include "discord.h"
+#include <stdlib.h>
 #include <string.h>
 #include <log.h>
 
