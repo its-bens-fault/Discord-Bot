@@ -1,5 +1,5 @@
 project('concord', 'c',
-  version : '2.2.1',
+  version : '2.3.0-dev',
   default_options : [
     'c_std=gnu99',
     'warning_level=3',
@@ -55,7 +55,7 @@ install_subdir(
 pkg = import('pkgconfig')
 
 pkg.generate(libraries : concord_lib,
-             version : '2.2.1',
+             version : '2.3.0-dev',
              subdirs: 'concord',
              name : 'libconcord',
              filebase : 'concord',

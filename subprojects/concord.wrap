@@ -1,8 +1,9 @@
 [wrap-file]
-directory = concord-2.2.1
-source_url = https://github.com/Cogmasters/concord/archive/refs/tags/v2.2.1.tar.gz
-source_filename = concord-2.2.1.tar.gz
-source_hash = 3d3897c2e7ae6edfdeac4231ffc54edb7d97630cf714f260540465e9e5cee354
+directory = concord-2.3.0
+source_url = https://github.com/Cogmasters/concord/archive/refs/tags/v2.3.0.tar.gz
+source_filename = concord-2.3.0.tar.gz
+source_hash = 3e789e6c6f9f3b5c480aaf4fb337819043c53fcce8b50966e95d7b5daef38d4d
+diff_files = concord-gencodecs.diff 
 patch_directory = concord
 
 [provide]

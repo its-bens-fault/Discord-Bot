@@ -11,6 +11,7 @@ concord_src += files(
   'discord-gateway.c',
   'discord-gateway_dispatch.c',
   'discord-messagecommands.c',
+  'discord-voice.c',
   'discord-timer.c',
   'discord-misc.c',
   'discord-worker.c',
@@ -28,5 +29,8 @@ concord_src += files(
   'oauth2.c',
   'user.c',
   'voice.c',
+  'poll.c',
+  'stage_instance.c',
+  'sticker.c',
   'webhook.c',
 )
