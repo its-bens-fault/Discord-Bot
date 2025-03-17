@@ -2,7 +2,7 @@
   description = "StarBot, but Smaller";
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -14,7 +14,9 @@
         inherit system;
       };
 
-      pkgs-windows = pkgs.pkgsCross.mingwW64;
+      # Until we implement/take an implementation of Poll it is not compatible
+      # But this could be a fun thing to add to it too
+      pkgs-windows = pkgs.pkgsCross.ucrt64;
 
       # For Linux Specific Dependencies
       linux' = pkgs.lib.optional pkgs.stdenv.isLinux;
@@ -28,7 +30,7 @@
       ];      
 
       bDeps = p: with p; [
-        curl
+        pkgs.pkgsStatic.curlMinimal
       ] ++ (linux' [
       ]) ++ (darwin' ([
       ] ++ (with darwin.apple_sdk.frameworks; [
@@ -41,7 +43,7 @@
         mesonWrapCache = let
           mesonPy = pkgs.python3.withPackages (p: [p.meson]); 
         in import (pkgs.runCommand "meson-wrap-${name}-${version}" {} ''
-          ${mesonPy}/bin/${mesonPy.executable} ${./mesonWrapFetch.py} ${./.} > $out
+          ${mesonPy}/bin/${mesonPy.executable} ${./mesonWrapFetch.py} ${./.} | tee $out
         '') { inherit pkgs; };
       in  {
         pname = name;
@@ -63,7 +65,12 @@
       });
 
       starbot-exe = pkgs-windows.stdenv.mkDerivation ( sharedEnv // {        
-        buildInputs = bDeps pkgs-windows;
+        buildInputs = bDeps pkgs-windows ++ [
+          pkgs-windows.windows.mingw_w64_pthreads
+#          pkgs-windows.windows.mingw_w64_headers
+          pkgs-windows.windows.mingwrt
+        ];
+        depsBuildBuild = [pkgs.gcc];
         
         propagatedBuildInputs = pbDeps pkgs-windows;
       });
