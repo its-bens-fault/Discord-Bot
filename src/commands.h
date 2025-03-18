@@ -36,9 +36,9 @@ CCORDcode interactions_upsert(struct discord *client, const struct discord_ready
           .size = sizeof(int_options) / sizeof(*int_options)}},
 
 #define INTERACTION_CREATE_END                                                 \
-  }                                                                            \
-  ;                                                                            \
-  interactions_upsert(                                                         \
+  }                                                                            
+#define INTERACTION_UPDATE_BOT						\
+  interactions_upsert(							\
       client, event,                                                           \
       (struct discord_application_commands){                                   \
           .array = &global_commands[0],                                        \

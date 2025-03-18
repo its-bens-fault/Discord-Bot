@@ -3,40 +3,44 @@
 #include "commands.h"
 #include "src/commands.h"
 
-void on_ready(struct discord *client, const struct discord_ready *event) {
-  log_debug("I'm ready!!");
+struct discord_application_command_option quote_opts[] = {
+  (struct discord_application_command_option) {
+    .name = "quote",
+    .description = "the quote text",
+    .type = DISCORD_APPLICATION_OPTION_STRING,
+    .required = true,
+  },
+  (struct discord_application_command_option) {
+    .name = "author",
+    .description = "who originally said the quote",
+    .type = DISCORD_APPLICATION_OPTION_STRING,
+    .required = true,
+  },
+};
 
-  struct discord_application_command_option quote_opts[] = {
-    (struct discord_application_command_option) {
-      .name = "quote",
-      .description = "the quote text",
+struct discord_application_command_option stupify_opts[] = {
+  (struct discord_application_command_option) {
+      .name = "content",
+      .description = "The original message to be \"corrected\"",
       .type = DISCORD_APPLICATION_OPTION_STRING,
       .required = true,
-    },
-    (struct discord_application_command_option) {
-      .name = "author",
-      .description = "who originally said the quote",
-      .type = DISCORD_APPLICATION_OPTION_STRING,
-      .required = true,
-    },
-  };
-
-  struct discord_application_command_option stupify_opts[] = {
-    (struct discord_application_command_option) {
-        .name = "content",
-        .description = "The original message to be \"corrected\"",
-        .type = DISCORD_APPLICATION_OPTION_STRING,
-	.required = true,
-    }
-  };  
+  }
+};  
   
-  INTERACTION_CREATE_START
-    INTERACTION_CREATE(ping, "Ping Pong Time!", DISCORD_APPLICATION_CHAT_INPUT)
-    INTERACTION_CREATE_W_OPT(quote, "Create a very inspirational quote", DISCORD_APPLICATION_CHAT_INPUT, quote_opts)
-    INTERACTION_CREATE(quoth, "Turn a message into an inspriational quote", DISCORD_APPLICATION_MESSAGE)
-    INTERACTION_CREATE_W_OPT(stupify-my-words, "Send a message but without a few letters", DISCORD_APPLICATION_CHAT_INPUT, stupify_opts)
-    INTERACTION_CREATE(stupify, "Stupify a message", DISCORD_APPLICATION_MESSAGE)
-    INTERACTION_CREATE_END;
+INTERACTION_CREATE_START
+  INTERACTION_CREATE(ping, "Ping Pong Time!", DISCORD_APPLICATION_CHAT_INPUT)
+  INTERACTION_CREATE_W_OPT(quote, "Create a very inspirational quote", DISCORD_APPLICATION_CHAT_INPUT, quote_opts)
+  INTERACTION_CREATE(quoth, NULL, DISCORD_APPLICATION_MESSAGE)
+  INTERACTION_CREATE_W_OPT(stupify-my-words, "Send a message but without a few letters", DISCORD_APPLICATION_CHAT_INPUT, stupify_opts)
+  INTERACTION_CREATE(stupify, NULL, DISCORD_APPLICATION_MESSAGE)
+INTERACTION_CREATE_END;
+
+void on_ready(struct discord *client, const struct discord_ready *event) {
+  log_trace("I'm ready!!");
+  /* struct logconf *lconf = discord_get_logconf(client); */
+  /* logconf_set_quiet(lconf, false); */
+  /* logconf_set_level(lconf, LOG_DEBUG); */
+  INTERACTION_UPDATE_BOT;
 }
 
 void on_interaction(struct discord *client, const struct discord_interaction *event) {
