@@ -1,6 +1,7 @@
 #include "logging.h"
 #include <sqlite3.h>
 
+// TODO: Store in sqlite database
 void starbot_log_sqlite(log_Event *event) {
 }
 

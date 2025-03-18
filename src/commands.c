@@ -5,12 +5,17 @@
 #include "types.h"
 #include <string.h>
 
+// Definition of an enum, better than using magic numbers randomly in
+// the code like 1 means 2 means
 enum command_create_status {
   CREATE_NOOP,
   CREATE_NEW,
   CREATE_UPDATE,
 };
 
+// These are all callbacks for specific discord interactions. Like
+// with the Deno version of this code, you'll likely never need to
+// touch this
 void done_app_command(struct discord *client, struct discord_response *event,
                       const struct discord_application_command *cmd) {
   char *cmd_name = event->data;
@@ -33,11 +38,17 @@ void clean_app_command(struct discord *client, void *data) {
   free(data);
 }
 
+// This is how we specify the form/definition of a structured
+// variable: ___cmd_update_data (underscores bc we don't want this
+// used outside this file, ofc you could
 struct ___cmd_update_data {
   u64snowflake app_id;
   struct discord_application_commands commands;
 };
 
+// This is the callback of get_application_commands that's called
+// after on_ready This gets all the commands that exists and compares
+// it to the list of commands that we want to make/delete/edit
 void update_differed_commands(struct discord *client, struct discord_response *event, const struct discord_application_commands *old_commands) {
   struct ___cmd_update_data *data = event->data;
   struct discord_application_commands new_commands = data->commands;
@@ -117,21 +128,33 @@ void update_differed_commands(struct discord *client, struct discord_response *e
   }
 }
 
+// If getting the list of existing commands fails for some reason We
+// could add a timer to try to get the existing commands again
 void fail_differed_commands(struct discord *client, struct discord_response *event) {
   log_error("Failed to get existing application commands. No updates to commands will be submitted");
 }
 
+// When the call is alllll done, clalback, fail, what have you, we can
+// cleanup custom data
 void cleanup_differed_commands(struct discord *client, void* data) {
   log_debug("Cleanup: Get Application Commands");
   free(data);
 }
 
+// We call this after the bot is ready, and it starts the chain of: lets tell discord what commands we wanna have
 CCORDcode interactions_upsert(struct discord* client, const struct discord_ready *event, struct discord_application_commands commands) {
+  // We use the custom structured data to pass the callback information
   struct ___cmd_update_data *forward_data;
+  // So that the data is available outside this function we need to allocate it
   forward_data = malloc(sizeof(*forward_data));
+  // Then we copy the commands variable into it
   memcpy(&forward_data->commands, &commands, sizeof(commands));
+  // And we copy the application id (it's just a number so no need for
+  // memcpy) though we could
   forward_data->app_id = event->application->id;
-  
+
+  // We specify with another structured variables what callbacks or
+  // data we want to use when we call get commands
   struct discord_ret_application_commands existing_commands = {
     .data = forward_data,
     .done = &update_differed_commands,
@@ -139,6 +162,7 @@ CCORDcode interactions_upsert(struct discord* client, const struct discord_ready
     .cleanup = &cleanup_differed_commands,
   };
 
+  // Then we simply call get_global_application_commands
   discord_get_global_application_commands(client, event->application->id, &existing_commands);
   return CCORD_OK;
 }
