@@ -1,9 +1,15 @@
 #include "../commands.h"
 #include "curl/curl.h"
 #include "curl/easy.h"
+#include "discord-response.h"
+#include "discord.h"
+#include "discord_codecs.h"
+#include "error.h"
+#include "guild.h"
 #include "json-build.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "jsmn-find.h"
 #include "jsmn.h"
 
@@ -39,10 +45,10 @@ size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 }
 
 void command_quote(struct discord *client, const struct discord_interaction *event) {
-  char* author;
-  char* quote;
-  
-  switch (event->type) {
+  char* author = "NO AUTHOR FOUND";
+  char* quote = "YOU SHOULD NEVER SEE THIS!";
+  log_trace("Generating quote... type: %p (%d)", event, event->type);
+  switch (event->data->type) {
   case DISCORD_INTERACTION_APPLICATION_COMMAND:
     for (int i=0; i<event->data->options->size; i++) {
       char* name = event->data->options->array[i].name;
@@ -52,9 +58,23 @@ void command_quote(struct discord *client, const struct discord_interaction *eve
 	quote = event->data->options->array[i].value;
     }
     break;
-  case DISCORD_INTERACTION_MESSAGE_COMPONENT:
-    author = event->message->author->username;
-    quote = event->message->content;
+  case DISCORD_INTERACTION_MESSAGE_COMPONENT:;
+    json_char *msg_json = event->data->resolved->messages;
+    struct discord_messages msgs;
+    discord_messages_from_json(msg_json, strlen(msg_json), &msgs);
+    if (msgs.size > 0) {
+      struct discord_message msg = msgs.array[0];
+      struct discord_guild_member member = {0};
+      struct discord_ret_guild_member ret_mem = {
+	.sync = &member,
+      };
+      CCORDcode ccode = discord_get_guild_member(client, event->guild_id, msg.author->id, &ret_mem);
+      if (ccode == CCORD_OK)
+	author = member.nick;
+      else
+	author = msg.author->username;
+      quote = msg.content;
+    }
     break;
   default:
     log_error("Type of interaction not supported");

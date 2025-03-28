@@ -3,14 +3,20 @@
 #include <string.h>
 
 void command_stupify(struct discord *client, const struct discord_interaction *event) {
-  char* original;
+  char* original = "Nothing to see here";
 
-  switch (event->type) {
+  switch (event->data->type) {
   case DISCORD_INTERACTION_APPLICATION_COMMAND:
     original = event->data->options->array[0].value;
     break;
-  case DISCORD_INTERACTION_MESSAGE_COMPONENT:
-    original = event->message->content;
+  case DISCORD_INTERACTION_MESSAGE_COMPONENT:;
+    json_char *msg_json = event->data->resolved->messages;
+    struct discord_messages msgs;
+    discord_messages_from_json(msg_json, strlen(msg_json), &msgs);
+    if (msgs.size > 0) {
+      struct discord_message msg = msgs.array[0];
+      original = msg.content;
+    }
     break;
   default:
     original = "No message to stupify";

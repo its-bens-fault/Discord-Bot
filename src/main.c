@@ -54,6 +54,7 @@ void on_interaction(struct discord *client, const struct discord_interaction *ev
      whether the command of interest is being called, and designating,
      if it is, what function should be called in turn to do whatever
      it is that needs to be done */
+  log_trace("Interaction received... %p", event);
   INTERACTION_CALL("ping", command_pong);
   INTERACTION_CALL("quote", command_quote); /* <----- You may notice these have the same function. that's okay!   */
   INTERACTION_CALL("quoth", command_quote); /* <-/    All interactions get forwarded the same info, and so we can handle it */
@@ -74,6 +75,7 @@ int main(void) {
   discord_add_intents(client, DISCORD_GATEWAY_GUILDS |
 		      DISCORD_GATEWAY_GUILD_MESSAGES |
                                   DISCORD_GATEWAY_MESSAGE_CONTENT |
+		      DISCORD_GATEWAY_GUILD_MEMBERS |
                                   DISCORD_GATEWAY_GUILD_MESSAGE_REACTIONS |
                                   DISCORD_GATEWAY_GUILD_WEBHOOKS |
                                   DISCORD_GATEWAY_DIRECT_MESSAGES);
